@@ -1,0 +1,77 @@
+html {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: #446f7A;
+}
+.board-component {
+    border-left: 7px solid black;
+    border-right: 7px solid black;
+    border-top: 5px solid black;
+    border-bottom: 5px solid black;
+}
+.board-rank button {
+    width: 80px;
+    height: 80px;
+    margin-left: -2px;
+    margin-right: -2px;
+    margin-bottom: 0px;
+    border: none;
+}
+.board-rank button img {
+    size: 100px;
+    top: 20%;
+    left:20%;
+}
+.black-button {
+    background-color: #0b967d;
+}
+.white-button {
+    background-color: #c1f7ee;
+}
+.button-move {
+    border-radius: 20%;
+}
+.button-select {
+    background-color: #00ffaa;
+}
+.game-features select {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    margin-top: 25px;
+    background-color: #0b967d;
+    border: 2px solid black;
+    color: #c1f7ee;
+}
+.game-features option:hover {
+    box-shadow: #00ffaa;
+}
+.game-features textarea {
+    margin-top: 5px;
+    margin-left: 0px;
+    padding: 5px;
+    width: 635px;
+    height: 100px;
+    resize: none;
+    align-content: center;
+    background-color: #0b967d;
+    border: 2px solid black;
+    color: #c1f7ee;
+    font-size: 20px;
+}
+.game-features textarea::-webkit-scrollbar {
+    width: 1em;
+}
+.game-features textarea::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+.game-features textarea::-webkit-scrollbar-thumb {
+    background-color: #00ffaa;
+}
+.piece-string {
+    font-size: 50px;
+    font-family: 'Courier New', Courier, monospace;
+}
