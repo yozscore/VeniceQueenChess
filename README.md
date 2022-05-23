@@ -1,5 +1,3 @@
-# Venice Queen
-
 ![Venice Queen Banner](https://github.com/yozscore/VeniceQueenChess/blob/main/banner.png)
 
 Named after the Red Hot Chili Peppers song! This is a very hastily made Chess AI application. 
