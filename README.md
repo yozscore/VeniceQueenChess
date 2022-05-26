@@ -6,7 +6,7 @@ The AI is very brute-forced, and only runs on minimax with alpha-beta pruning an
 
 Overall, I wouldn't expect the bot to play too well, but it can play well enough to humiliate me half the time! I'm horrible at the game so take that however you may :)
 
-I've written down a couple of explanations for the algorithms in `script.js`. Check it out if you want.
+I've written down a couple of explanations for the algorithms in `script.js`. However, you're better off researching more visual guides. The best starting point is usually anything that talks about using minimax in chess programming.
 
 The application also provides a real-time PGN display, so you can export a game if you want to by copying it.
 
