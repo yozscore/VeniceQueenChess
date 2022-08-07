@@ -3,17 +3,9 @@
     A poorly made browser based chess application!
     I tried my best to keep the code in one file
     and it made my life miserable :)
-    Current performance for just the Perft searches
-    is 2-4M NPS. That's horrible but I don't think
-    I'm going for much better than that at this
-    point in time :(
     The bot uses minimax with alpha beta pruning 
     with quiescence and move sorting. I will not 
     be adding anything more than that at this point. 
-    User interface is absolutely atrocious and
-    looks ugly. No dragging and dropping and I am 
-    sure there's some bugs with clicking squares. 
-    I am too lazy to fix those.
 \* ================================================ */
 
 const KING = 0, QUEEN = 1, BISHOP = 2, KNIGHT = 3, ROOK = 4, PAWN = 5;      //0b0XXX
@@ -34,21 +26,13 @@ function getPieceType(piece) {
 
 const PIECE_STRING_LUT = ["K", "Q", "B", "N", "R", "P"];
 
-const FILE_LUT = {
-    "a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7
-};
+const FILE_LUT = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7};
 
-const FILE_TO_STRING = {
-    "0": "a", "1": "b", "2": "c", "3": "d", "4": "e", "5": "f", "6": "g", "7": "h"
-};
+const FILE_TO_STRING = {"0": "a", "1": "b", "2": "c", "3": "d", "4": "e", "5": "f", "6": "g", "7": "h"};
 
-const RANK_LUT = {
-    "1": 0, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6, "8": 7
-}
+const RANK_LUT = {"1": 0, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6, "8": 7}
 
-const RANK_TO_STRING = {
-    "0": "1", "1": "2", "2": "3", "3": "4", "4": "5", "5": "6", "6": "7", "7": "8"
-};
+const RANK_TO_STRING = {"0": "1", "1": "2", "2": "3", "3": "4", "4": "5", "5": "6", "6": "7", "7": "8"};
 
 const dfDiag = [ 1, 1, -1, -1 ], drDiag = [ 1, -1, 1, -1 ];
 const dfStra = [ 1, 0, -1, 0 ], drStra = [ 0, 1, 0, -1 ];
@@ -633,100 +617,7 @@ function perft(depth) {
     return nodes;
 }
 
-// Regression suite
-function regressionTests() {
-    let testList = [
-        {
-            fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-            depth: 6,
-            nodes: 119060324
-        },
-        {
-            fen: "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1",
-            depth: 5,
-            nodes: 193690690
-        },
-        {
-            fen: "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
-            depth: 7,
-            nodes: 178633661
-        },
-        {
-            fen: "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
-            depth: 6,
-            nodes: 706045033
-        },
-        {
-            fen: "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1",
-            depth: 6,
-            nodes: 706045033
-        },
-        {
-            fen: "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8",
-            depth: 5,
-            nodes: 89941194
-        },
-        {
-            fen: "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10",
-            depth: 5,
-            nodes: 164075551
-        }
-    ];
-
-    // Run tests
-    for(let t = 0; t < testList.length; t++) {
-        let fen = testList[t].fen;
-        let depth = testList[t].depth;
-        let nodes = testList[t].nodes;
-        loadFromFEN(fen);
-        let result = perft(depth);
-        if(result === nodes) console.log("~  ~  ~  ~  ~  ~  ~  ~  ~ PASSED ~  ~  ~  ~  ~  ~  ~  ~  ~");
-        else console.log("~  ~  ~  ~  ~  ~  ~  ~  ~ FAILED ~  ~  ~  ~  ~  ~  ~  ~  ~");
-    }
-}
-
 // ----------------------------------- EVALUATION -----------------------------------------
-/*
-    Brief explanations of the algorithm and optimizations used:
-
-    --- Minimax ---
-    Minimax is a very aged algorithm that checks all of the current player's moves and evaluates which ones have the best outcome for the current player. 
-    It does this by performing all of said moves, and then calculating the opponent's moves and seeing which of those moves give the best outcome for the 
-    opponent. As you may notice, this can be done recursively. The underlying assumption is that the opponent will always play the best move it finds, 
-    meaning the strength of a given move depends on the strongest opposing subsequent move. In other words, the move that minimizes the opponent's 
-    advantage is the move that maximizes the current player's advantage. We can recurse until the end of the game (either a win or a draw), but the number 
-    of positions to look at grows exponentially the deeper we go. This is not at all realistic, so we can use a depth limit upto a specific point. For 
-    example, we recurse 4 turns in and then stop there (which would make this the leaf node of our recursion tree). The problem is... what do we return 
-    when we stop there? This is where an evaluation function is useful. Chess positional evaluation is a very deep topic that this application does not go 
-    into, and is the focus of many neural network based chess engines out there (Quite frankly, I am not smart enough). However, we can employ something 
-    much simpler and pray that it works out for us. We can count pawns at the end of our recursion; we can total up the number of pieces the current 
-    player has versus the total number of pieces the opponent has (Of course, accommodating for the fact that some pieces are worth more than one pawn etc). 
-    If one side has more pieces than the other, we can just return the difference in material count.
-    --- Quiescence ---
-    The problem with just stopping at the leaf nodes is that there's no consideration for where the pieces are at the moment we count pawns. For example, 
-    for one line we may end up with a bishop more than our opponent, but our queen might be directly attacked by the enemy's pawn (on the enemy's turn). 
-    If we stop the recursion here and return the pawn-counted evaluation, our evaluation will claim that we are winning in this position when we are 
-    definitely not. The solution for this is that, when we get to the end of our minimax recursion, we start a different recursive search that looks through 
-    all of the possible capture moves from that point. This alternative recursive search will not be limited by depth, but will continue until there are no 
-    captures possible and then this search functon can return the pawn-counted evaluation. This ensures that we do not return any positions where an immediate 
-    capture is possible. This search is dubbed the "quiescence" search, because it ensures we only count pawns for "quiet" positions.
-    --- Alpha-Beta pruning ---
-    As great as both of those searching algorithms are, they are very slow. In fact, each of those searches will look through every possible move that it finds. 
-    Quite frankly, this is not efficient. But there is a very key detail to how minimax works: Imagine a scenario where we, as white, evaluate two of our 
-    possible moves A and B. Imagine for move A, we find that black has possible moves that give us an evaluation of 1, -3, -2 (these numbers are utterly made 
-    up, heh). This means that the best move for black after move A gives black an advantage of +3, hence gives move A an evaluation of -3 for us. We then look 
-    through the black's moves after our move B, and find out instantly that black's first option gives black a score of +5, or -5 for us. -5 is already worse for 
-    us than -3, which means that in any case, the worst outcome from move B is WORSE than the worst outcome from move A. At that point, there is no point 
-    calculating the rest of black's moves after white's move B, because we already know that move B is out of the question. This optimization is called 
-    alpha-beta pruning, and it significantly speeds up our search.
-    --- Move sorting ---
-    A further key detail to how alpha-beta pruning works is that if we find good moves for the current player early on, then it becomes much easier to reject 
-    other moves that are immediately worse than our "best" move. This is important, because we know that we want to evaluate potentially good moves first! A trick 
-    for this is making guesses about moves. We can't specifically know what moves are good and what moves are bad, because that's the job of the search function. 
-    However, there are certain moves that are very likely to be bad. For example, taking a pawn with a queen is likely not as good a move as taking a queen with 
-    a pawn. With this logic we can attempt to make guesses about which moves are likely good, and which moves are likely bad, and give them numeric guess scores. 
-    We can use these scores to then sort the list of moves such that our search function will look at the "likely good" moves first.
-*/
 
 // Current best move in the position
 var currentBestMove = undefined;
@@ -743,8 +634,8 @@ const PIECE_SQUARE_VALUES = [
     [                                       // 0
         // KING --- WHITE
         [
-                20, 30, 10,  0,  0, 10, 30, 20,
-                20, 20,  0,  0,  0,  0, 20, 20,
+            20, 30, 10,  0,  0, 10, 30, 20,
+            20, 20,  0,  0,  0,  0, 20, 20,
             -10,-20,-20,-20,-20,-20,-20,-10,
             -20,-30,-30,-40,-40,-30,-30,-20,
             -30,-40,-40,-50,-50,-40,-40,-30,
@@ -787,37 +678,37 @@ const PIECE_SQUARE_VALUES = [
         ],
         // ROOK --- WHITE
         [
-                0,  0,  0,  5,  5,  0,  0,  0,
+            0,  0,  0,  5,  5,  0,  0,  0,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
             -5,  0,  0,  0,  0,  0,  0, -5,
-                5, 10, 10, 10, 10, 10, 10,  5,
-                0,  0,  0,  0,  0,  0,  0, -0
+            5, 10, 10, 10, 10, 10, 10,  5,
+            0,  0,  0,  0,  0,  0,  0, -0
         ],
         // PAWN --- WHITE
         [
-                0,  0,  0,  0,  0,  0,  0,  0,
-                5, 10, 10,-20,-20, 10, 10,  5,
-                5, -5,-10,  0,  0,-10, -5,  5,
-                0,  0,  0, 35, 35,  0,  0,  0,
-                5,  5, 15, 40, 40, 15,  5,  5,
+            0,  0,  0,  0,  0,  0,  0,  0,
+            5, 10, 10,-20,-20, 10, 10,  5,
+            5, -5,-10,  0,  0,-10, -5,  5,
+            0,  0,  0, 35, 35,  0,  0,  0,
+            5,  5, 15, 40, 40, 15,  5,  5,
             10, 10, 25, 45, 45, 25, 10, 10,
             50, 50, 50, 50, 50, 50, 50, 50,
-                0,  0,  0,  0,  0,  0,  0,  0
+            0,  0,  0,  0,  0,  0,  0,  0
         ]
     ],
     [], [], [], [], [], [], [], 
     [                                       // 8
         // KING --- BLACK
         [
-                30, 40, 40, 50, 50, 40, 40, 30,
-                30, 40, 40, 50, 50, 40, 40, 30,
-                30, 40, 40, 50, 50, 40, 40, 30,
-                30, 40, 40, 50, 50, 40, 40, 30,
-                20, 30, 30, 40, 40, 30, 30, 20,
-                10, 20, 20, 20, 20, 20, 20, 10,
+            30, 40, 40, 50, 50, 40, 40, 30,
+            30, 40, 40, 50, 50, 40, 40, 30,
+            30, 40, 40, 50, 50, 40, 40, 30,
+            30, 40, 40, 50, 50, 40, 40, 30,
+            20, 30, 30, 40, 40, 30, 30, 20,
+            10, 20, 20, 20, 20, 20, 20, 10,
             -20,-20,  0,  0,  0,  0,-20,-20,
             -20,-30,-10,  0,  0,-10,-30,-20
         ],
@@ -905,28 +796,8 @@ function getMoveScore(move) {
     // Quiet moves
     else {
         let value = 0;
-
         // Pawn promotions
         if(move.promotion !== NO_PIECE) value += PROMOTION_VALUES[move.promotion];
-        
-        // Try not move to the enemy pawn attacks
-        // TODO FIX THIS LMAO
-        // let color = getPieceColor(move.movedpiece);
-        // if(color === WHITE) {
-        //     if((move.to.file > 0 && board[move.to.rank + 1][move.to.file - 1] === (BLACK | PAWN)) ||
-        //        (move.to.file < 7 && board[move.to.rank + 1][move.to.file + 1] === (BLACK | PAWN))) {
-        //         value -= Math.abs(PIECE_WEIGHTS[getPieceColor(takenpiece)][getPieceType(takenpiece)]);
-        //     }
-        // }
-        // else {
-        //     if((move.to.file > 0 && board[move.to.rank - 1][move.to.file - 1] === (WHITE | PAWN)) ||
-        //        (move.to.file < 7 && board[move.to.rank - 1][move.to.file + 1] === (WHITE | PAWN))) {
-        //         value -= Math.abs(PIECE_WEIGHTS[getPieceColor(takenpiece)][getPieceType(takenpiece)]);
-        //     }
-        // }
-        
-        // TODO: Add more attributes 
-        
         return value;
     }
 }
